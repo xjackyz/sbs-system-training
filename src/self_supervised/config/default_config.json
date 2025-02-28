@@ -1,0 +1,42 @@
+{
+  "csv_path": "NQ_full_1min_continuous/NQ_full_1min_continuous.csv",
+  "model_path": "models/llava-sbs/",
+  "output_dir": "data/charts",
+  "sbs_dir": "data/sbs_sequences",
+  "signals_dir": "data/signals",
+  "checkpoint_dir": "models/checkpoints",
+  "device": "cuda",
+  "batch_size": 4,
+
+  "chart": {
+    "window_size": 100,
+    "stride": 1,
+    "figsize": [10, 6],
+    "dpi": 100,
+    "save_ratio": 0.01,
+    "format": "png"
+  },
+
+  "signal_tracker": {
+    "profit_target": 0.01,
+    "stop_loss": 0.005,
+    "max_holding_periods": 20,
+    "reward_profit_factor": 2.0,
+    "penalty_loss_factor": 1.0
+  },
+
+  "training": {
+    "epochs": 3,
+    "learning_rate": 1e-5,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "evaluation_steps": 200,
+    "save_steps": 500,
+    "max_samples": 10000
+  },
+
+  "a100_estimation": {
+    "time_per_chart": 0.05,
+    "memory_utilization": 0.8
+  }
+} 

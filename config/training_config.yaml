@@ -1,0 +1,218 @@
+# 基本配置
+environment: development
+debug: true
+log_level: INFO
+
+# 设备配置
+device:
+  use_gpu: true
+  num_workers: 4
+
+# 模型配置
+model:
+  path: models/llava_base
+  type: llava
+  base_model: llava-v1.6
+  vision_tower: openai/clip-vit-large-patch14-336
+  image_size: [336, 336]
+  max_length: 4096
+  hidden_size: 768
+  num_hidden_layers: 12
+  num_attention_heads: 12
+  intermediate_size: 3072
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+  dtype: float16
+  use_quantization: true
+  use_pruning: false
+  use_distillation: false
+
+# 训练配置
+training:
+  batch_size: 4
+  learning_rate: 2e-5
+  num_epochs: 10
+  gradient_accumulation_steps: 16
+  mixed_precision: bf16
+  max_seq_length: 512
+  model_parallel: false
+  save_interval: 5
+  label_sync_interval: 10
+  gpu_settings:
+    max_memory: 0.9
+    allow_growth: true
+  baseline_validation:
+    enabled: true
+    interval: 1000
+  initial_training:
+    warmup_steps: 100
+    weight_decay: 0.01
+  validation:
+    metrics: ["accuracy", "precision", "recall", "f1"]
+    min_confidence: 0.8
+  data:
+    train_ratio: 0.8
+    val_ratio: 0.1
+    test_ratio: 0.1
+  optimizer:
+    type: AdamW
+    beta1: 0.9
+    beta2: 0.999
+    epsilon: 1e-8
+  process:
+    gradient_clip: 1.0
+    early_stopping_patience: 5
+
+# 缓存配置
+cache:
+  redis_host: localhost
+  redis_port: 6379
+  redis_password: null
+  l1_cache_size: 1000
+  ttl: 3600
+
+# Label Studio配置
+label_studio:
+  api_url: http://localhost:8080
+  api_key: your_api_key
+  project_id: 1
+  sync_interval: 300
+  export_format: JSON
+  annotation_config:
+    instruction_template: templates/instruction.html
+    control_tags: ["Choice", "Text", "Rating"]
+    required_agreement: 0.8
+  quality_control:
+    minimum_annotations_per_task: 2
+    agreement_measure: "kappa"
+    auto_accept_threshold: 0.8
+  workflow:
+    auto_distribution: true
+    reviewers_per_task: 1
+    review_threshold: 0.7
+  api_version: 2
+  timeout: 30
+  retry_count: 3
+  batch_size: 100
+
+# 渲染配置
+render:
+  image_size: [800, 600]
+  dpi: 100
+  backend: taichi
+  max_frames: 1000
+  quality: high
+
+# 数据配置
+data:
+  preprocessing:
+    image:
+      target_size: [336, 336]
+      quality_threshold: 0.8
+      brightness_range: [0.2, 0.8]
+      contrast_range: [0.4, 0.8]
+      noise_threshold: 0.1
+      cache_size: 1000
+      augmentation:
+        enabled: true
+        rotation_range: 5
+        zoom_range: 0.1
+        brightness_range: [0.9, 1.1]
+        contrast_range: [0.9, 1.1]
+    sequence:
+      min_length: 100
+      max_length: 200
+      validation_window: 100
+      features: ["open", "high", "low", "close", "volume"]
+      indicators:
+        ma: [20, 50, 200]
+        rsi: [14]
+        macd:
+          fast: 12
+          slow: 26
+          signal: 9
+
+# 监控配置
+monitoring:
+  prometheus_port: 9090
+  grafana_port: 3000
+  metrics_interval: 60
+  history_size: 3600
+  alert_thresholds:
+    gpu_temperature: 80
+    gpu_memory_percent: 90
+    cpu_usage: 90
+    memory_usage: 90
+
+# 通知配置
+notification:
+  enabled: true
+  level: INFO
+  discord_webhook: your_discord_webhook_url
+  alert_channels: ["email", "discord"]
+  retry_interval: 300
+
+# 备份配置
+backup:
+  path: backups
+  retention_days: 7
+  interval: 86400
+  compress: true
+
+# 自监督学习配置
+self_supervised:
+  enabled: true
+  augmentation:
+    enabled: true
+    methods:
+      - random_crop
+      - random_flip
+      - color_jitter
+  pretext_tasks:
+    - rotation
+    - jigsaw
+  training:
+    batch_size: 32
+    num_epochs: 100
+    learning_rate: 0.001
+    weight_decay: 0.0001
+
+# 自适应训练配置
+adaptive_training:
+  enabled: true
+  learning_rate:
+    min: 1e-6
+    max: 1e-4
+    adjustment_factor: 0.1
+    patience: 3
+  batch_size:
+    min: 1
+    max: 32
+    memory_threshold: 0.8
+  online_learning:
+    enabled: true
+    update_interval: 1000
+    buffer_size: 10000
+  architecture_update:
+    enabled: false
+    check_interval: 5000
+    metrics_window: 1000
+
+# Ray分布式训练配置
+ray:
+  address: auto
+  num_cpus: 8
+  num_gpus: 2
+  memory_per_worker: 10000000000  # 10GB
+  object_store_memory: 20000000000  # 20GB
+  runtime_env:
+    working_dir: .
+    pip: requirements.txt
+  fault_tolerance:
+    max_failures: 3
+    recovery_time: 30
+  scheduling:
+    strategy: SPREAD
+    resources_per_worker:
+      CPU: 2
+      GPU: 0.5 
