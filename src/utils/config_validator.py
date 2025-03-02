@@ -4,7 +4,7 @@
 """
 
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, EmailStr
 from enum import Enum
 
 class Environment(str, Enum):
@@ -64,6 +64,14 @@ class BackupConfig(BaseModel):
 class NotificationConfig(BaseModel):
     enabled: bool = Field(True, description="是否启用通知")
     level: str = Field('INFO', description="通知级别")
+    email_host: str = Field('smtp.qq.com', description="SMTP服务器地址")
+    email_port: int = Field(587, description="SMTP服务器端口")
+    email_use_tls: bool = Field(True, description="是否使用TLS")
+    email_host_user: EmailStr = Field(..., description="发件人邮箱")
+    email_host_password: str = Field(..., description="邮箱授权码")
+    email_from: EmailStr = Field(..., description="发件人显示名称")
+    email_to: List[EmailStr] = Field(..., description="收件人邮箱列表")
+    email_subject_prefix: str = Field("[SBS系统]", description="邮件主题前缀")
 
 class TrainingConfig(BaseModel):
     gpu_settings: Dict = Field(..., description="GPU相关设置")
@@ -100,6 +108,13 @@ class SystemConfig(BaseModel):
         valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
         if v.upper() not in valid_levels:
             raise ValueError(f'日志级别必须是以下之一: {valid_levels}')
+        return v.upper()
+
+    @validator('level')
+    def validate_notification_level(cls, v):
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if v.upper() not in valid_levels:
+            raise ValueError(f'通知级别必须是以下之一: {valid_levels}')
         return v.upper()
 
     class Config:

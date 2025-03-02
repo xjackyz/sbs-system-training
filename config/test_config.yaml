@@ -1,0 +1,119 @@
+# SBS系统测试配置
+
+# 系统环境配置
+environment: testing
+debug: true
+log_level: DEBUG
+
+# 设备配置
+device:
+  use_gpu: false  # 测试环境使用CPU
+  num_workers: 2
+
+# 模型配置
+model:
+  path: tests/fixtures/mock_model
+  batch_size: 2
+  type: transformer
+  hidden_size: 128  # 测试时使用小型模型
+  num_hidden_layers: 2
+  num_attention_heads: 2
+  intermediate_size: 512
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+
+# API配置
+api:
+  tradingview_key: test_api_key
+  discord_webhook: test_webhook_url
+
+# 数据库配置
+database:
+  host: localhost
+  port: 5432
+  name: sbs_test_db
+  user: test_user
+  password: test_password
+
+# 缓存配置
+cache:
+  redis_host: localhost
+  redis_port: 6379
+  redis_password: null
+
+# 网络配置
+network:
+  mirror_url: http://localhost:8080
+  verify_ssl: false
+  timeout: 5
+
+# 安全配置
+security:
+  secret_key: test_secret_key
+  jwt_secret: test_jwt_secret
+  encryption_key: test_encryption_key
+
+# 监控配置
+monitoring:
+  prometheus_port: 9091  # 避免与生产端口冲突
+  grafana_port: 3001
+
+# 备份配置
+backup:
+  path: tests/data/backup
+  retention_days: 1
+
+# 通知配置
+notification:
+  enabled: true
+  level: DEBUG
+  email_host: localhost
+  email_port: 1025  # 使用测试SMTP服务器
+  email_use_tls: false
+  email_host_user: test@example.com
+  email_host_password: test_password
+  email_from: test@example.com
+  email_to:
+    - test_recipient@example.com
+  email_subject_prefix: "[SBS测试]"
+
+# 训练配置
+training:
+  gpu_settings:
+    device_ids: []  # 空列表表示使用CPU
+    memory_limit: 0.5
+    mixed_precision: false
+  baseline_validation:
+    enabled: true
+    interval: 10
+    metrics:
+      - accuracy
+      - f1_score
+  initial_training:
+    epochs: 2
+    learning_rate: 0.01
+    warmup_steps: 5
+  validation:
+    batch_size: 2
+    frequency: 5
+  data:
+    train_ratio: 0.6
+    val_ratio: 0.2
+    test_ratio: 0.2
+  optimizer:
+    type: adam
+    weight_decay: 0.01
+    beta1: 0.9
+    beta2: 0.999
+  process:
+    save_checkpoint_steps: 10
+    log_frequency: 5
+    early_stopping_patience: 2
+
+# 信号配置
+signal:
+  thresholds:
+    confidence: 0.6  # 测试环境降低阈值
+    strength: 0.5
+    volume: 1.2
+  min_interval: 1  # 测试环境缩短间隔 

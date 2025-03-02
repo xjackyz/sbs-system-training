@@ -63,4 +63,8 @@ class SignalError(SBSBaseException):
 
 class TrainingError(SBSBaseException):
     """训练过程错误"""
+    pass
+
+class NotificationError(SBSBaseException):
+    """通知发送错误"""
     pass 

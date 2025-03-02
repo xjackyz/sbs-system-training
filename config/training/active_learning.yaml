@@ -1,0 +1,61 @@
+# 主动学习训练模式配置
+
+# 基本配置
+name: "sbs_active_learning"
+description: "SBS主动学习训练"
+version: "1.0.0"
+
+# 数据配置
+labeled_data_path: "data/active/labeled"
+unlabeled_data_path: "data/active/unlabeled"
+val_data_path: "data/active/val"
+
+# 模型配置
+model_type: "sbs_model"
+model_config:
+  input_size: 128
+  hidden_size: 256
+  output_size: 5  # 5个点的预测
+  num_layers: 3
+  dropout: 0.2
+  uncertainty_estimation: true  # 用于估计不确定性
+
+# 优化器配置
+optimizer:
+  type: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+
+# 学习率调度器
+use_lr_scheduler: true
+scheduler_type: "step"
+lr_step_size: 10
+lr_gamma: 0.1
+
+# 训练参数
+batch_size: 32
+epochs: 100
+val_interval: 1
+save_interval: 5
+early_stop: 10
+num_workers: 4
+shuffle: true
+
+# 主动学习参数
+acquisition_size: 10  # 每轮获取的样本数
+acquisition_interval: 5  # 每多少个epoch获取一次新样本
+acquisition_strategy: "uncertainty"  # 获取策略：uncertainty, diversity, random
+
+# 设备配置
+device: "cuda"  # 或 "cpu"
+
+# 日志和检查点
+log_dir: "logs/active"
+checkpoint_dir: "checkpoints/active"
+
+# 评估配置
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1"]
+  save_predictions: true
+  visualization: true
+  track_acquisition: true  # 跟踪样本获取过程 

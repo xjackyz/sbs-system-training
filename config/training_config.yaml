@@ -2,66 +2,182 @@
 environment: development
 debug: true
 log_level: INFO
+seed: 42  # 明确设置随机种子
 
 # 设备配置
 device:
   use_gpu: true
   num_workers: 4
+  accelerator: "auto"
+  devices: "auto"
+  strategy: "auto"
+  precision: "16-mixed"
+  pin_memory: true
 
 # 模型配置
 model:
+  input_size: 6  # 修改为实际特征数量：open, high, low, close, sma20, sma200
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.2
   path: models/llava_base
   type: llava
   base_model: llava-v1.6
   vision_tower: openai/clip-vit-large-patch14-336
   image_size: [336, 336]
   max_length: 4096
-  hidden_size: 768
-  num_hidden_layers: 12
-  num_attention_heads: 12
-  intermediate_size: 3072
-  hidden_dropout_prob: 0.1
-  attention_probs_dropout_prob: 0.1
-  dtype: float16
-  use_quantization: true
-  use_pruning: false
-  use_distillation: false
 
 # 训练配置
 training:
-  batch_size: 4
-  learning_rate: 2e-5
-  num_epochs: 10
-  gradient_accumulation_steps: 16
-  mixed_precision: bf16
-  max_seq_length: 512
-  model_parallel: false
-  save_interval: 5
-  label_sync_interval: 10
-  gpu_settings:
-    max_memory: 0.9
-    allow_growth: true
-  baseline_validation:
-    enabled: true
-    interval: 1000
-  initial_training:
-    warmup_steps: 100
-    weight_decay: 0.01
-  validation:
-    metrics: ["accuracy", "precision", "recall", "f1"]
-    min_confidence: 0.8
-  data:
-    train_ratio: 0.8
-    val_ratio: 0.1
-    test_ratio: 0.1
+  # 基础训练参数
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 100
+  final_epochs: 200  # 使用最佳参数的最终训练轮数
+  validation_split: 0.2
+  early_stopping:
+    patience: 10
+    min_delta: 0.001
+  checkpointing:
+    save_top_k: 3
+    monitor: "val_loss"
+    mode: "min"
+  
+  # 优化器配置
   optimizer:
-    type: AdamW
+    type: "adamw"
+    weight_decay: 0.01
     beta1: 0.9
     beta2: 0.999
-    epsilon: 1e-8
-  process:
-    gradient_clip: 1.0
-    early_stopping_patience: 5
+  
+  # 学习率调度器配置  
+  scheduler:
+    name: "reduce_on_plateau"
+    factor: 0.5
+    patience: 5
+    min_lr: 0.00001
+    
+  # 数据增强配置
+  augmentation:
+    enabled: true
+    horizontal_flip: false
+    vertical_flip: false
+    rotation: false
+    scaling: true
+    translation: true
+    noise: true
+  
+  # 数据加载配置
+  dataloader:
+    batch_size: 32
+    sequence_length: 60
+    train_ratio: 0.7
+    val_ratio: 0.15
+    num_workers: 4
+    pin_memory: true
+
+# 实验跟踪配置
+tracking:
+  # WandB配置
+  wandb:
+    project: "sbs-training"
+    entity: "your-username"
+    tags: ["sbs", "production"]
+    notes: "SBS系统训练实验"
+    log_model: true
+    watch:
+      log: "all"
+      log_freq: 100
+  
+  # MLflow配置
+  mlflow:
+    tracking_uri: "http://localhost:5000"
+    experiment_name: "sbs-training"
+    run_name: null
+    tags:
+      version: "1.0.0"
+      env: "production"
+
+# Optuna 配置
+optuna:
+  study_name: "sbs_model_optimization"
+  n_trials: 30
+  timeout_seconds: 86400  # 24小时超时
+  direction: "maximize"
+  metric: "val_acc"
+  pruner: "median"
+
+# 路径配置
+paths:
+  data_dir: "data"
+  model_dir: "models/checkpoints"
+  log_dir: "logs/training"
+  backup_dir: "backups"
+
+# 日志配置
+logging:
+  level: "INFO"
+  save_dir: "logs"
+  log_every_n_steps: 10
+  flush_logs_every_n_steps: 100
+
+# 其他配置
+seed: 42
+
+# 奖励机制配置
+reward:
+  accuracy_weight: 0.4  # 人工标注准确率权重
+  profit_weight: 0.6    # 盈利表现权重
+  risk_penalty: 0.1     # 风险控制惩罚系数
+  max_drawdown_limit: 0.1
+  
+# 主动学习配置
+active_learning:
+  uncertainty_threshold: 0.7
+  min_samples_per_batch: 10
+  max_samples_per_batch: 50
+  human_label_ratio: 0.3
+  diversity_weight: 0.5
+  
+# 自适应学习配置
+adaptive:
+  min_learning_rate: 1e-6
+  max_learning_rate: 1e-4
+  batch_size_range: [16, 64]
+  warmup_steps: 1000
+  
+# 验证配置
+validation:
+  validation_interval: 100  # 每100步验证一次
+  early_stopping_patience: 5
+  min_improvement: 0.001
+  
+# 数据管理
+data:
+  cache_size: 10000  # 缓存样本数量
+  cache_ttl: 3600    # 缓存过期时间(秒)
+  prefetch_size: 2   # 数据预加载批次
+  window_size: 100
+  stride: 20
+  features:
+    - "open"
+    - "high"
+    - "low"
+    - "close"
+  technical_indicators:
+    - name: "SMA"
+      periods: [20, 200]
+
+# 分布式训练
+distributed:
+  num_workers: 4
+  worker_batch_size: 8
+  sync_interval: 10
+  backend: "nccl"
+  num_nodes: 1
+  num_gpus: -1  # 使用所有可用GPU
+  ddp_find_unused_parameters: false
+  sync_batchnorm: true
 
 # 缓存配置
 cache:
@@ -103,35 +219,6 @@ render:
   max_frames: 1000
   quality: high
 
-# 数据配置
-data:
-  preprocessing:
-    image:
-      target_size: [336, 336]
-      quality_threshold: 0.8
-      brightness_range: [0.2, 0.8]
-      contrast_range: [0.4, 0.8]
-      noise_threshold: 0.1
-      cache_size: 1000
-      augmentation:
-        enabled: true
-        rotation_range: 5
-        zoom_range: 0.1
-        brightness_range: [0.9, 1.1]
-        contrast_range: [0.9, 1.1]
-    sequence:
-      min_length: 100
-      max_length: 200
-      validation_window: 100
-      features: ["open", "high", "low", "close", "volume"]
-      indicators:
-        ma: [20, 50, 200]
-        rsi: [14]
-        macd:
-          fast: 12
-          slow: 26
-          signal: 9
-
 # 监控配置
 monitoring:
   prometheus_port: 9090
@@ -143,6 +230,24 @@ monitoring:
     gpu_memory_percent: 90
     cpu_usage: 90
     memory_usage: 90
+  metrics:
+    - "loss"
+    - "accuracy"
+    - "reward"
+    - "learning_rate"
+  system:
+    gpu_memory: true
+    cpu_usage: true
+    ram_usage: true
+  alerts:
+    enabled: true
+    metrics:
+      loss_spike:
+        threshold: 2.0
+        window: 10
+      gpu_memory:
+        threshold: 0.95
+        window: 5
 
 # 通知配置
 notification:
@@ -215,4 +320,127 @@ ray:
     strategy: SPREAD
     resources_per_worker:
       CPU: 2
-      GPU: 0.5 
+      GPU: 0.5
+
+# WandB配置
+wandb:
+  project: "sbs-training"  # 项目名称
+  entity: "your-username"  # 你的WandB用户名
+  tags: ["sbs", "production"]  # 运行标签
+  notes: "SBS系统训练实验"  # 运行说明
+  log_model: true  # 是否记录模型
+  watch:
+    log: "all"  # 记录所有梯度
+    log_freq: 100  # 每100步记录一次
+  sweep:
+    method: "bayes"  # 超参数搜索方法
+    metric:
+      name: "val_loss"
+      goal: "minimize"
+
+# MLflow配置
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "sbs-training"
+  run_name: null  # 自动生成
+  tags:
+    version: "1.0.0"
+    env: "production"
+
+# 训练配置
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  validation_split: 0.2
+  early_stopping:
+    patience: 10
+    min_delta: 0.001
+  checkpointing:
+    save_top_k: 3
+    monitor: "val_loss"
+    mode: "min"
+  
+  # 奖励机制
+  reward:
+    profit_weight: 0.3
+    accuracy_weight: 0.7
+    risk_penalty: 0.1
+  
+  # 主动学习
+  active_learning:
+    max_samples_per_batch: 100
+    uncertainty_threshold: 0.7
+    diversity_weight: 0.5
+    
+  # 优化器
+  optimizer:
+    type: "adamw"
+    weight_decay: 0.01
+    beta1: 0.9
+    beta2: 0.999
+    
+  # 学习率调度
+  scheduler:
+    type: "reduce_on_plateau"
+    patience: 5
+    factor: 0.1
+    min_lr: 1e-6
+
+# 日志配置
+logging:
+  level: "INFO"
+  save_dir: "logs"
+  log_every_n_steps: 10
+  flush_logs_every_n_steps: 100
+
+# 数据配置
+data_dir: "data"
+
+# 模型保存配置
+model_dir: "models/checkpoints"
+log_dir: "logs/training"
+
+# 训练配置
+seed: 42
+max_epochs: 100
+early_stopping_patience: 10
+
+# Optuna 配置
+n_trials: 50
+timeout: 86400  # 24小时
+
+# 硬件配置
+num_workers: 4
+pin_memory: true
+
+# 日志配置
+log_interval: 100
+save_top_k: 3
+
+# 优化器配置
+optimizer:
+  type: "adam"
+  lr: 0.001
+  weight_decay: 0.0001
+
+# 学习率调度器配置
+scheduler:
+  type: "reduce_on_plateau"
+  patience: 5
+  factor: 0.5
+  min_lr: 0.00001
+
+# 模型默认配置（会被 Optuna 优化覆盖）
+model:
+  input_size: 6  # 修改为实际特征数量：open, high, low, close, sma20, sma200
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.2
+
+# 数据加载默认配置（会被 Optuna 优化覆盖）
+dataloader:
+  batch_size: 32
+  sequence_length: 60
+  train_ratio: 0.7
+  val_ratio: 0.15 

@@ -1,0 +1,46 @@
+# LLaVA-SBS 主动学习配置
+
+# 随机种子
+seed: 42
+
+# 路径配置
+paths:
+  data_dir: "./data"
+  model_dir: "./models/llava-sbs"
+  log_dir: "./logs"
+  output_dir: "./output"
+
+# 模型配置
+model:
+  path: "models/llava-sbs/final"  # 微调后的模型路径
+  image_size: [336, 336]          # 图像大小
+  max_length: 512                 # 最大序列长度
+
+# 主动学习配置
+active_learning:
+  batch_size: 4                   # 批处理大小
+  num_samples: 10                 # 每轮选择的样本数量
+  strategy: "uncertainty"         # 样本选择策略: uncertainty 或 random
+  uncertainty_threshold: 0.7      # 不确定性阈值
+  min_samples_per_batch: 5        # 每批最小样本数
+  max_samples_per_batch: 20       # 每批最大样本数
+  human_label_ratio: 0.3          # 人工标注比例
+  diversity_weight: 0.5           # 多样性权重
+
+# 标注界面配置
+annotation:
+  label_studio:
+    enabled: false
+    api_url: "http://localhost:8080"
+    api_key: "your_api_key_here"
+    project_id: 1
+
+# 日志配置
+logging:
+  level: "INFO"
+  log_every_n_steps: 10
+
+# 跟踪配置
+tracking:
+  enabled: true
+  report_to: ["tensorboard"] 

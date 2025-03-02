@@ -1,0 +1,58 @@
+# SBS数据处理配置
+
+# 基本配置
+environment: development
+log_level: INFO
+seed: 42
+
+# 路径配置
+paths:
+  source_data_dir: "data/raw"       # 原始图表目录
+  data_dir: "data"                  # 数据根目录
+  log_dir: "logs"                   # 日志目录
+
+# 图像处理配置
+image_processing:
+  target_size: [336, 336]           # 目标图像大小
+  format: "jpg"                     # 保存格式
+  quality: 95                       # 保存质量
+  normalize: true                   # 是否标准化
+
+# 数据集划分
+data_split:
+  train_ratio: 0.8                  # 训练集比例
+  val_ratio: 0.2                    # 验证集比例
+  random_seed: 42                   # 随机种子
+
+# 提示词模板
+prompt_templates:
+  default: "图片中是否显示了市场结构的突破？前一个高点或低点是否被实体K线突破？请指出具体位置。"
+  
+  structure_break: "图片中是否显示了市场结构的突破？前一个高点或低点是否被实体K线突破？请指出具体位置。"
+  
+  double_top_bottom: "在这张图中，双顶或双底形态是否已确认？如果确认，何时入场？在12345（SBS）序列中双顶或双底形态通常发生在哪个位置？"
+  
+  liquidation: "图片中是一个有效的liquidation吗？在sbs序列中liquidate通常发生在什么地方？"
+  
+  sbs_sequence: "这张图显示的是否是一个有效的SBS序列？请标出12345五个点的位置。"
+  
+  sce: "图片里是一个有效的SCE吗？SCE是什么？"
+  
+  trend: "图片中的sma20和sma200分别是哪条线？如何用这两条线判断市场趋势？"
+  
+  swing: "图片中的swing有什么特点？请解释Swing High和Swing Low的意义。"
+
+# 主动学习设置
+active_learning:
+  enabled: true                     # 是否启用主动学习
+  initial_samples: 50               # 初始标注样本数
+  batch_size: 10                    # 每批选择的样本数
+  strategy: "uncertainty"           # 样本选择策略: uncertainty 或 random
+  uncertainty_threshold: 0.7        # 不确定性阈值
+  diversity_weight: 0.5             # 多样性权重
+
+# 日志配置
+logging:
+  level: "INFO"
+  save_dir: "logs"
+  log_every_n_files: 10             # 每处理10个文件记录一次日志 

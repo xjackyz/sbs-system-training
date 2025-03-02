@@ -1,0 +1,99 @@
+# 强化学习训练模式配置
+
+# 基本配置
+name: "sbs_reinforcement_learning"
+description: "SBS强化学习训练"
+version: "1.0.0"
+
+# 数据配置
+market_data_path: "data/rl/market"
+val_data_path: "data/rl/val"
+
+# 模型配置
+model_type: "sbs_model"
+model_config:
+  input_size: 128
+  hidden_size: 256
+  output_size: 5  # 5个点的预测
+  num_layers: 4
+  dropout: 0.2
+  rl_mode: true
+  attention_enabled: true  # 启用注意力机制
+
+# 优化器配置
+optimizer:
+  type: "adam"
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+
+# 学习率调度器
+use_lr_scheduler: true
+scheduler_type: "plateau"
+lr_factor: 0.5
+lr_patience: 5
+
+# 训练参数
+batch_size: 16
+epochs: 200
+val_interval: 1
+save_interval: 5
+early_stop: 20
+num_workers: 4
+shuffle: true
+
+# 探索机制配置
+exploration:
+  enabled: true
+  rate: 0.15  # 初始探索率
+  decay: 0.98  # 探索率衰减
+  min_rate: 0.05  # 最小探索率
+
+# 奖励计算器配置
+use_reward_calculator: true
+reward_config:
+  reward_type: "combined"
+  profit_multiplier: 1.0
+  accuracy_weight: 0.3
+  sequence_weight: 0.3
+  risk_reward_weight: 0.5
+  market_trend_weight: 0.15
+  win_bonus: 0.1
+  consecutive_win_bonus: 0.05
+  drawdown_penalty: 0.2
+  volatility_bonus: 0.1
+  exploration_rate: 0.1  # 奖励探索率
+  exploration_decay: 0.995
+  min_exploration_rate: 0.01
+  min_reward: -1000.0
+  max_reward: 2000.0
+
+# 交易跟踪器配置
+use_trade_tracker: true
+tracker_config:
+  track_all_trades: true
+  save_interval: 10
+  max_history_size: 10000
+  storage_dir: "data/trades"
+  exploration_enabled: true  # 与上面的exploration一致
+  exploration_rate: 0.15
+  exploration_decay: 0.98
+  min_exploration_rate: 0.05
+  
+  # LabelStudio导出配置
+  label_studio:
+    enabled: true
+    export_interval: 10  # 每10个epoch导出一次
+
+# 设备配置
+device: "cuda"  # 或 "cpu"
+
+# 日志和检查点
+log_dir: "logs/rl"
+checkpoint_dir: "checkpoints/rl"
+
+# 评估配置
+evaluation:
+  metrics: ["win_rate", "profit_factor", "avg_profit", "max_drawdown"]
+  save_predictions: true
+  visualization: true
+  compare_to_market: true 
