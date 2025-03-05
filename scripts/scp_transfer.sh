@@ -55,8 +55,15 @@ tar --exclude=".git" \
     README.md
 
 # 3. 使用SCP传输打包文件
-echo "正在传输文件，请稍候..."
-scp -P ${SERVER_PORT} sbs_system.tar.gz ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/
+# 传输所有文件到远程服务器
+echo "正在传输所有文件到远程服务器，请稍候..."
+tar -czf - -C . . | ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} "tar -xzf - -C ${REMOTE_DIR}"
+
+# 新增：从远程服务器传回所有内容
+# 这里将使用 tar 命令将整个远程目录打包并传回本地
+
+echo "正在从远程服务器传回所有内容..."
+ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} "tar -czf - -C ${REMOTE_DIR} ." | tar -xzf - -C ${LOCAL_RECEIVE_DIR}
 
 # 4. 在远程服务器上解压文件
 echo "正在远程解压文件..."
@@ -96,10 +103,6 @@ ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} "cd ${REMOTE_DIR} && \
 # 10. 运行服务器设置脚本
 echo "正在运行服务器设置脚本..."
 ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} "cd ${REMOTE_DIR} && ./scripts/server_setup.sh"
-
-# 新增：从远程服务器传回所有内容
-echo "正在从远程服务器传回所有内容..."
-ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} "tar -czf - -C ${REMOTE_DIR} ." | tar -xzf - -C ${LOCAL_RECEIVE_DIR}
 
 # 结束
 echo "========================================"
