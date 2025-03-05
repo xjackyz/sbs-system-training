@@ -1,534 +1,344 @@
-# SBS交易系统 (Sequential Breakthrough System)
+# SBS System
 
-<div align="center">
-  <img src="docs/images/sbs_logo.png" alt="SBS Logo" width="200"/> <!-- 示意图，需要创建 -->
-  
-  <p>
-    <strong>基于视觉的智能交易分析系统</strong><br>
-    识别市场结构突破 · 预测交易信号 · 优化交易决策
-  </p>
-</div>
+SBS System 是一个用于训练和评估基于 LLaVA 模型的深度学习框架，支持多种训练模式，包括自监督学习、强化学习和主动学习。该系统旨在通过高效的训练和回测机制，帮助用户优化交易策略。
 
-## 📑 目录
+## 架构图
 
-- [系统概述](#-系统概述)
-- [核心特点](#-核心特点)
-- [安装指南](#-安装指南)
-- [快速开始](#-快速开始)
-- [SBS交易序列详解](#-sbs交易序列详解)
-- [系统架构](#-系统架构)
-- [模块详解](#-模块详解)
-- [使用示例](#-使用示例)
-- [配置指南](#-配置指南)
-- [常见问题](#-常见问题)
-- [开发指南](#-开发指南)
-- [许可协议](#-许可协议)
+![Architecture](architecture.png)
 
-## 🔍 系统概述
+## 各部分实现
 
-SBS（Sequential Breakthrough System）是一个基于视觉的智能交易分析系统，核心使用经过专门微调的LLaVA（Large Language and Vision Assistant）多模态模型。系统能够"看懂"交易图表，直接识别市场结构突破点和交易形态，模拟专业交易员的视觉分析能力。
+### 1. 数据加载
+- 使用 `torch.utils.data.DataLoader` 加载数据，支持多线程数据加载以提高效率。
+- 数据集包括标记和未标记的数据，支持主动学习和自监督学习。
 
-SBS系统只依赖原始K线数据和两条简单移动平均线（SMA20和SMA200）作为辅助指标，摒弃了复杂的技术指标组合，专注于价格行为和市场结构分析。
+### 2. 模型训练
+- 使用 `SBSTrainer` 类实现模型的训练逻辑。
+- 支持多卡训练，通过 `torch.nn.DataParallel` 实现。
+- 使用混合精度训练（`torch.cuda.amp`）以提高训练速度和减少显存占用。
 
-![SBS系统概览](docs/images/system_overview.png) <!-- 示意图，需要创建 -->
+### 3. 强化学习
+- 实现强化学习逻辑，通过奖励机制优化模型决策。
+- 使用 `RewardMechanism` 类计算奖励并更新模型。
 
-## ✨ 核心特点
+### 4. 回测与可视化
+- 实现回测功能，评估模型在历史数据上的表现。
+- 使用 `matplotlib` 可视化回测结果，生成图表以便分析。
 
-- **视觉理解优先**：直接从K线图表中识别交易模式，不依赖复杂的数值指标
-- **结构化分析**：识别市场结构突破和关键点位序列（12345序列）
-- **简约指标使用**：仅使用SMA20和SMA200作为辅助判断趋势方向
-- **多模态学习**：结合视觉和语言能力解读市场
-- **自适应策略**：通过主动学习持续优化交易策略
-- **多样形态识别**：能识别双顶双底、流动性获取(Liquidate)和SCE(单蜡烛入场)等关键形态
-- **全面可视化**：丰富的图表分析和交易信号标注
+### 5. 日志记录
+- 使用 Python 的 `logging` 模块记录训练过程中的重要信息和损失值。
 
-## 📦 安装指南
+## 安装和使用
 
-### 系统要求
-
-- Python 3.8+
-- CUDA 11.7+ (推荐GPU训练)
-- 至少16GB RAM (推荐32GB+)
-- 至少8GB GPU显存 (推荐16GB+用于模型训练)
-
-### 安装步骤
-
-1. 克隆仓库
-
-```bash
-git clone https://github.com/yourusername/sbs_system.git
-cd sbs_system
-```
-
-2. 创建虚拟环境
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-3. 安装依赖
-
+### 依赖项
+确保安装以下依赖项：
 ```bash
 pip install -r requirements.txt
 ```
 
-4. 下载预训练模型
-
+### 运行项目
+使用以下命令启动训练：
 ```bash
-python scripts/download_pretrained_models.py
+python src/sbs_train.py --config <config_file> --mode <training_mode>
+``` 
+
+## 贡献指南
+
+欢迎贡献代码！请遵循以下步骤：
+1. Fork 本项目。
+2. 创建您的特性分支 (`git checkout -b feature/YourFeature`)。
+3. 提交您的更改 (`git commit -m 'Add some feature'`)。
+4. 推送到分支 (`git push origin feature/YourFeature`)。
+5. 创建一个新的 Pull Request.
+
+## 项目简介
+
+SBS System 是一个用于训练和评估自监督学习、强化学习和主动学习模型的框架。该项目提供了统一的训练入口，支持多种训练模式，并集成了奖励机制、数据加载、模型评估等功能。通过使用该系统，用户可以方便地进行模型训练、调试和评估。
+
+### 背景信息
+
+随着机器学习和深度学习的快速发展，越来越多的应用场景需要高效的模型训练和评估工具。SBS System 旨在提供一个灵活且易于使用的框架，以支持多种学习模式，帮助研究人员和开发者更好地实现他们的目标。
+
+## 特性
+
+- **多种训练模式**：支持标准训练、自监督学习、强化学习和主动学习。
+- **奖励机制**：动态计算和调整奖励值，以适应不同的市场条件和交易表现。
+- **数据加载**：高效的数据加载功能，支持多线程处理。
+- **可视化**：提供训练过程中的可视化功能，帮助用户理解模型性能。
+- **日志记录**：详细记录训练过程中的重要信息，便于调试和分析。
+
+## 目录结构
+
+```
+app/: 应用程序主要代码
+config/: 配置文件
+data/: 数据文件
+logs/: 日志文件
+models/: 模型相关代码
+prompts/: 提示词模板
+scripts/: 工具脚本
+src/: 源代码
+tests/: 测试代码
+docs/: 文档
 ```
 
-## 🚀 快速开始
+## 组件功能
 
-### 准备训练数据
+### 1. 训练入口 (`src/sbs_train.py`)
+- **功能**：提供统一的训练入口，支持多种训练模式（标准、自监督、强化学习、主动学习）。
+- **命令行参数解析**：解析用户输入的命令行参数，设置训练环境和随机种子。
+- **配置文件加载**：加载配置文件并根据命令行参数覆盖配置，确保灵活性。
+- **训练器创建**：根据配置创建训练器实例，并调用训练方法开始训练。
 
+### 2. 训练器 (`src/self_supervised/trainer/sbs_trainer.py`)
+- **功能**：统一的 SBS 序列模型训练器，支持多种训练模式。
+- **模型初始化**：根据配置初始化模型、优化器、奖励计算器、交易跟踪器、评估器和数据加载器。
+- **训练和验证**：提供训练、验证和保存模型检查点的功能，确保模型性能的持续监控。
+- **早停机制**：支持早停机制，根据验证集性能自动停止训练，避免过拟合。
+- **动态学习率调整**：根据训练进度动态调整学习率，提高训练效率。
+- **日志记录**：记录训练过程中的重要信息和调试信息，便于后续分析。
+
+### 3. 奖励机制 (`src/self_supervised/utils/reward_calculator.py`)
+- **功能**：计算模型的奖励值，支持多种奖励计算方法。
+- **奖励计算方法**：根据预测结果和真实标签计算准确度奖励、序列奖励和市场条件调整奖励。
+- **动态调整**：提供动态调整奖励参数的功能，以适应不同的市场条件和交易表现。
+- **历史记录**：记录交易历史和奖励计算的详细信息，便于后续分析。
+
+### 4. 数据加载 (`src/self_supervised/utils/data_loader.py`)
+- **功能**：提供数据加载功能，支持标准训练、自监督训练和主动学习的数据加载。
+- **多线程处理**：处理数据批次，支持多线程处理，提高数据加载效率。
+- **数据预处理**：根据需求对数据进行预处理，确保数据质量。
+
+### 5. 配置管理 (`src/self_supervised/utils/config_manager.py`)
+- **功能**：加载和保存配置文件，支持 YAML 格式。
+- **配置读取**：提供配置的读取和写入功能，确保灵活性和可维护性。
+- **错误处理**：处理配置文件加载中的错误，确保系统稳定性。
+
+### 6. 日志记录 (`src/self_supervised/utils/logger.py`)
+- **功能**：设置日志记录器，支持不同的日志级别。
+- **信息记录**：记录训练过程中的重要信息和调试信息，便于后续分析。
+- **日志格式**：自定义日志格式，确保信息清晰易读。
+
+### 7. 可视化 (`src/self_supervised/visualization/visualization.py`)
+- **功能**：提供可视化功能，绘制训练损失曲线和验证 F1 分数曲线。
+- **数据展示**：通过图表展示训练过程中的关键指标，帮助用户理解模型性能。
+- **图表定制**：支持图表的定制，满足不同用户的需求。
+
+## 安装指南
+
+### 系统要求
+- 操作系统：Linux、macOS 或 Windows
+- Python 版本：3.6 及以上
+- 硬件要求：支持 CUDA 的 GPU（可选）
+
+### 安装步骤
+1. **克隆或下载项目**：
+   ```bash
+   git clone https://github.com/yourusername/sbs_system.git
+   cd sbs_system
+   ```
+2. **安装依赖项**：
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **配置环境变量**（如有必要）：
+   根据项目需求设置相应的环境变量。
+
+## 使用说明
+
+### 基本用法
+使用以下命令启动训练：
 ```bash
-# 处理图表图像并准备训练数据
-python scripts/prepare_image_data.py --src_dir data/raw --output_dir data/processed
+python src/sbs_train.py --config <配置文件路径> --mode <训练模式> --output_dir <输出目录>
 ```
 
-### 模型微调
-
-```bash
-# 对LLaVA模型进行微调
-python scripts/train_llava_sbs.py --config config/training_config.yaml
-```
-
-### 主动学习优化
-
-```bash
-# 选择最具信息价值的样本进行标注
-python scripts/active_learning.py --model_path models/llava-sbs/final --num_samples 10
-```
-
-### 预测交易信号
-
-```bash
-# 分析交易图表
-python scripts/predict_with_llava.py --image path/to/chart.png --prompt "图片中是否显示了市场结构的突破？"
-```
-
-## 📈 SBS交易序列详解
-
-SBS交易系统基于"12345"序列模式进行交易，这是一种市场结构分析方法，包含5个关键点位：
-
-![SBS交易序列示意图](docs/images/sbs_sequence.png) <!-- 示意图，需要创建 -->
-
-### 5个关键点位
-
-1. **点1**：突破后的第一次回调形成的点，即突破后第一个明显的回调高点或低点
-2. **点2**：由点1创造出的极值点（上升趋势时的最高高点或下降趋势时的最低低点），作为主要盈利目标
-3. **点3**：在点1附近获取流动性的点，即价格回调突破点1所创造的高/低点
-4. **点4**：确认点，通常与点3形成双底/双顶或通过流动性获取确认，此时价格显示出结构性的反转迹象
-5. **点5**：趋势继续，价格回到点2的位置
-
-### 入场确认信号
-
-系统识别四种主要入场确认信号：
-
-- **结构突破**：价格突破前一个高点/低点，由实体K线确认
-- **双顶/双底**：在点3和点4之间形成的反转形态，需要顶点或底点接近并有明显回调
-- **流动性获取(Liquidate)**：价格短暂突破关键位置后没有发生结构反转，而是迅速反转回原有趋势
-- **SCE(Single Candle Entry)**：一根蜡烛收盘后高点低点均高于和低于前一根不同颜色的蜡烛，后续第一根蜡烛为同样颜色，通常发生在点4
-
-### 交易执行
-
-- **入场点**：点4确认后，符合入场条件时（通常是点3的回调被突破后）
-- **止损位**：点4下方(多单)/上方(空单)，防止因假突破造成较大亏损
-- **止盈位**：主要目标为点2位置，或点2到点3之间的61.8%斐波那契回撤位作为第一止盈位
-
-### 趋势确认
-
-SMA20和SMA200均线可以帮助确认市场趋势：
-- 价格高于SMA20和SMA200：上升趋势，适合做多
-- 价格低于SMA20和SMA200：下降趋势，适合做空
-
-## 🏗️ 系统架构
-
-SBS系统由多个协同工作的模块组成，下图展示了各模块之间的关系：
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  LLaVA-SBS模型  │◄───┤   图表处理器    │◄───┤   图表数据输入  │
-└────────┬────────┘    └────────┬────────┘    └─────────────────┘
-         │                      │                       ▲
-         ▼                      ▼                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  SBSTrainer     │◄───┤  SBSDataset     │◄───┤   交易图表源    │
-└────────┬────────┘    └────────┬────────┘    └─────────────────┘
-         │                      │
-         ▼                      ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ SBSActiveLearner◄───┤    结果分析器    │    │  交易信号生成器 │
-└────────┬────────┘    └────────┬────────┘    └────────┬────────┘
-         │                      │                      │
-         └──────────────────────┴──────────────────────┘
-```
-
-## 📚 模块详解
-
-### 1. 核心模型模块
-
-#### 1.1 LLaVA-SBS模型
-
-**功能**：多模态视觉语言模型，负责K线图分析和交易形态识别。
-
-**主要组件**：
-- 视觉编码器(ViT-L-14-336px)：处理图表视觉特征
-- 语言模型：基于视觉特征生成交易分析
-- 多模态连接层：连接视觉和语言理解能力
-
-**核心能力**：
-- 识别市场结构突破
-- 检测双顶/双底形态
-- 分析流动性获取点
-- 识别SCE入场信号
-- 标记SBS序列关键点位
-
-#### 1.2 SBSDataset
-
-**功能**：处理交易图表图像和相应的提示文本
-
-**主要特点**：
-- 加载和预处理交易图表图像
-- 匹配图像与对应的提示文本
-- 支持图像尺寸调整和标准化
-- 提供批量数据加载功能
-
-#### 1.3 SBSActiveLearningDataset
-
-**功能**：支持主动学习的数据集，扩展基本数据集以支持不确定性采样和主动学习策略
-
-**核心功能**：
-- 更新样本权重用于主动学习采样
-- 标记已标注样本
-- 获取未标记样本索引
-- 生成样本元数据信息
-
-### 2. 训练与优化模块
-
-#### 2.1 SBSTrainer
-
-**功能**：定制的训练器，继承自Huggingface的Trainer，添加特定于SBS任务的训练功能
-
-**核心功能**：
-- 计算训练损失
-- 评估模型性能
-- 保存模型和训练配置
-- 提供训练过程监控
-
-#### 2.2 SBSActiveLearner
-
-**功能**：主动学习器，用于实施主动学习策略，选择最具信息价值的样本进行标注
-
-**核心功能**：
-- 选择样本进行标注
-- 计算样本不确定性
-- 不同选择策略支持(uncertainty/random)
-- 更新模型权重
-
-### 3. 使用与预测模块
-
-#### 3.1 预测工具
-
-**功能**：使用微调后的LLaVA-SBS模型分析交易图表
-
-**核心功能**：
-- 加载微调后的模型
-- 处理输入交易图表
-- 生成分析结果和交易建议
-- 支持多种分析提示模板
-
-## 🌟 使用示例
-
-### 微调LLaVA-SBS模型
-
+### 示例代码
+以下是一个基本的使用示例：
 ```python
-# 加载配置
-with open('config/training_config.yaml', 'r', encoding='utf-8') as f:
-    config = yaml.safe_load(f)
+# 示例代码
+import os
+from src.self_supervised.trainer.sbs_trainer import SBSTrainer
 
-# 设置随机种子
-seed = config.get('seed', 42)
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-
-# 准备模型
-processor, model = prepare_llava_model(config)
-
-# 准备数据集
-train_dataset, val_dataset = prepare_datasets(config, processor)
-
-# 开始训练
-training_args = TrainingArguments(
-    output_dir=config['paths']['model_dir'] + '/checkpoints',
-    per_device_train_batch_size=config['training']['batch_size'],
-    learning_rate=float(config['training']['learning_rate']),
-    num_train_epochs=config['training']['epochs'],
-    fp16=True
-)
-
-# 创建训练器
-trainer = SBSTrainer(
-    model=model,
-    args=training_args,
-    train_dataset=train_dataset,
-    eval_dataset=val_dataset,
-    tokenizer=processor.tokenizer
-)
-
-# 执行训练
+config = {'optimizer': {'type': 'adam', 'learning_rate': 0.001}, 'epochs': 10, 'log_dir': 'logs'}
+trainer = SBSTrainer(config=config, mode='standard')
 trainer.train()
-
-# 保存模型
-final_model_path = config['paths']['model_dir'] + '/final'
-model.save_pretrained(final_model_path)
-processor.save_pretrained(final_model_path)
 ```
 
-### 主动学习样本选择
+### 命令行参数
+- `--config`: 配置文件路径，包含训练参数和模型配置。
+- `--mode`: 训练模式，可选值为 `standard`, `self_supervised`, `rl`, `active_learning`。
+- `--output_dir`: 输出目录，用于保存训练结果和日志。
 
-```python
-# 加载模型和处理器
-processor, model = load_model_and_processor(model_path, device='cuda')
+## 配置
 
-# 准备数据集
-dataset = SBSActiveLearningDataset(
-    data_dir='data/active_learning',
-    processor=processor,
-    image_size=(336, 336)
-)
-
-# 创建主动学习器
-active_learner = SBSActiveLearner(
-    model=model,
-    dataset=dataset,
-    processor=processor,
-    device='cuda',
-    batch_size=4
-)
-
-# 选择样本
-selected_indices = active_learner.select_samples(
-    num_samples=10,
-    strategy='uncertainty'  # 'uncertainty' 或 'random'
-)
-
-# 标记选中的样本
-dataset.mark_as_labeled(selected_indices)
-
-# 获取样本元数据
-for idx in selected_indices:
-    metadata = dataset.get_sample_metadata(idx)
-    print(f"样本 {idx}: {metadata['image_path']}")
-```
-
-### 预测与交易图表分析
-
-```python
-# 加载模型和处理器
-processor, model = load_model_and_processor(model_path, device='cuda')
-
-# 处理图像
-image = process_image(image_path, processor, image_size=(336, 336))
-
-# 设置提示词
-prompt = "图片中是否显示了市场结构的突破？前一个高点或低点是否被实体K线突破？请指出具体位置。"
-
-# 分析图表
-result = analyze_chart(image, processor, model, prompt)
-
-# 输出结果
-print("分析结果:")
-print(result)
-```
-
-## ⚙️ 配置指南
-
-SBS系统使用YAML格式的配置文件，所有配置文件位于`config/`目录。
-
-### 主要配置文件
-
-- **训练配置**: `config/training_config.yaml`
-- **主动学习配置**: `config/active_learning_config.yaml`
-- **预测配置**: `config/predict_config.yaml`
-
-### 训练配置示例
-
+### 配置文件
+配置文件应为 YAML 格式，示例如下：
 ```yaml
-# 基本配置
-environment: development
-seed: 42
-
-# 设备配置
-device:
-  use_gpu: true
-  num_workers: 4
-  accelerator: "auto"
-  precision: "16-mixed"
-
-# 模型配置
-model:
-  path: "liuhaotian/llava-v1.5-7b"
-  type: "llava"
-  image_size: [336, 336]
-  max_length: 512
-
-# 训练配置
-training:
-  batch_size: 4
-  gradient_accumulation_steps: 4
-  learning_rate: 2.0e-5
-  epochs: 3
-  
-  # 学习率调度器
-  scheduler:
-    type: "cosine"
-    warmup_steps: 100
-  
-  # LoRA配置
-  lora:
-    enabled: true
-    r: 16
-    alpha: 32
-    dropout: 0.05
-    target_modules: ["q_proj", "v_proj"]
-
-# 路径配置
-paths:
-  data_dir: "data"
-  model_dir: "models/llava-sbs"
-  log_dir: "logs"
+optimizer:
+  type: adam
+  learning_rate: 0.001
+  weight_decay: 0.0001
+epochs: 100
+batch_size: 32
+log_dir: logs
+train_data_path: data/train.csv
+val_data_path: data/val.csv
 ```
 
-### 主动学习配置示例
+### 环境变量
+列出需要设置的环境变量及其说明（如有必要）。
 
-```yaml
-# 主动学习配置
-active_learning:
-  batch_size: 4
-  num_samples: 10
-  strategy: "uncertainty"
-  uncertainty_threshold: 0.7
-  diversity_weight: 0.5
+## 贡献指南
+
+### 贡献流程
+欢迎任何形式的贡献！请提交问题、建议或拉取请求。
+- **提交问题**：在 GitHub 上提交问题，描述您遇到的任何问题。
+- **提交拉取请求**：在您的分支上进行更改并提交拉取请求。
+
+### 代码风格指南
+遵循 PEP 8 规范，确保代码可读性。
+
+### 开发环境设置
+提供开发环境的设置说明。
+
+## 测试
+
+### 测试说明
+项目中包含了测试用例，使用 `pytest` 进行测试：
+```bash
+pytest src/tests/
 ```
 
-## ❓ 常见问题
-
-### 训练相关
-
-**Q: LLaVA-SBS模型训练需要什么样的计算资源？**
-
-A: 微调至少需要一张16GB显存的GPU，理想情况下建议使用24GB以上显存的GPU。可以通过开启量化(4bit或8bit)和梯度累积来减少显存需求。
-
-**Q: 如何提高模型识别准确率？**
-
-A: 增加高质量的标注数据，通过主动学习选择最具信息价值的样本进行标注，细化形态定义，确保训练数据覆盖各种市场条件。
-
-**Q: 训练数据如何准备？**
-
-A: 交易图表应按336x336像素大小标准化，并为每张图表准备对应的提示文本，描述图表中的市场结构和模式。使用`prepare_image_data.py`脚本可以自动化这一过程。
-
-### 预测相关
-
-**Q: 系统支持哪些市场的分析？**
-
-A: 系统适用于任何提供K线图表的市场，包括股票、外汇和加密货币市场，只要图表中包含K线和SMA20/SMA200均线即可。
-
-**Q: 如何提高入场信号的可靠性？**
-
-A: 结合多个入场确认信号，尤其在SMA20和SMA200的相对位置支持交易方向时。例如，在上升趋势中(价格在均线上方)寻找多头信号，下降趋势中(价格在均线下方)寻找空头信号。
-
-**Q: 如何解释模型的预测结果？**
-
-A: 模型输出包含对交易图表的自然语言分析，指出是否存在市场结构突破、双顶/双底形态、流动性获取点，以及SBS序列中的各个关键点位。根据这些分析来确定入场点、止损位和止盈位。
-
-### 系统相关
-
-**Q: 如何为不同市场微调模型？**
-
-A: 针对特定市场收集标注图表，运行增量微调训练。例如，如果主要交易加密货币，可以准备更多加密货币市场的图表；如果交易外汇，则准备更多外汇市场的图表。
-
-**Q: 系统是否适用于不同的时间周期？**
-
-A: 是的，SBS系统适用于各种时间周期的图表，从分钟级到日线级别。建议为特定时间周期微调模型以获得最佳结果。
-
-**Q: 如何评估模型性能？**
-
-A: 可以使用以下指标：
-- 序列识别准确率：模型正确识别SBS序列点位的准确率
-- 入场信号精度：模型正确识别入场时机的准确度
-- 回测表现：基于模型建议的交易胜率和盈亏比
-
-## 👨‍💻 开发指南
-
-### 代码风格
-
-项目遵循以下代码规范：
-
-- 遵循PEP 8规范
-- 使用4空格缩进
-- 最大行长度限制为120字符
-- 类名使用CamelCase
-- 函数和变量名使用snake_case
-- 常量使用大写字母
-- 文档字符串使用中文
-- 注释应清晰解释复杂逻辑
-
-### 导入规范
-
-- 标准库导入在最前
-- 第三方库导入其次
-- 本地模块导入最后
-- 每组导入之间空一行
-
-### 目录结构
-
-```
-sbs_system/
-├── app/                # 应用程序主要代码
-├── config/            # 配置文件
-├── data/              # 数据文件
-│   ├── raw/           # 原始图表
-│   ├── processed/     # 处理后的训练数据
-│   └── active_learning/ # 主动学习数据
-├── docs/              # 文档
-├── logs/              # 日志文件
-├── models/            # 模型相关代码
-├── prompts/           # 提示词模板
-├── scripts/           # 工具脚本
-├── src/               # 源代码
-│   ├── data_utils/    # 数据处理工具
-│   ├── training/      # 训练相关代码
-│   └── utils/         # 工具类
-├── tests/             # 测试代码
-└── requirements.txt   # 依赖项
+### 测试覆盖率工具
+使用 `pytest-cov` 进行测试覆盖率分析：
+```bash
+pytest --cov=src
 ```
 
-### 版本控制
+## 文档和示例
 
-- 提交信息使用中文
-- 提交信息需要清晰描述改动
-- 每个提交专注于单一功能或修复
-- 分支管理:
-  - main: 主分支，保持稳定
-  - develop: 开发分支
-  - feature/*: 功能分支
-  - bugfix/*: 修复分支
+### 详细文档
 
-## 📄 许可协议
+确保每个模块和功能都有详细的文档说明，便于后续的维护和扩展。以下是系统的整体流程和逻辑：
 
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+### 1. 数据处理与图片生成
+- **数据来源**：系统从原始CSV文件中读取数据，处理后生成相应的K线图。
+- **生成过程**：使用Matplotlib等库生成图表，并将生成的图片保存到指定的输出路径。
 
----
+### 2. 模型训练
+- **训练阶段**：生成的图片将用于模型的训练，包括自监督学习、强化学习和主动学习等多个环节。
+- **奖励机制**：模型在执行交易时会根据市场表现和预设的奖励机制计算奖励，成功的交易会获得正奖励，而失败的交易则会受到惩罚。
+- **动态调整**：根据计算得到的奖励，模型会调整其策略，以提高未来的决策质量。
 
-<div align="center">
-  <p>
-    SBS交易系统开发团队 © 2023<br>
-    <a href="https://github.com/yourusername/sbs_system">GitHub仓库</a> · 
-    <a href="https://docs.sbs-system.com">文档网站</a> · 
-    <a href="https://discord.gg/sbs-system">Discord社区</a>
-  </p>
-</div>
+### 3. 回测与评估
+- **回测函数**：在训练完成后，系统会进行回测，评估模型的表现并生成报告。
+- **性能指标**：计算回测结果的性能指标，为后续生成报告提供数据支持。
+
+### 4. 报告生成
+- **报告内容**：使用 `ReportGenerator` 类生成训练和评估报告，报告中包含训练过程中的关键指标、模型配置、训练历史等信息。
+- **保存报告**：生成的报告将保存到指定路径，便于后续查看和分析。
+
+### 5. 监控与调整
+- **实时监控**：在训练过程中，实时监控模型的表现，并根据实时反馈调整训练策略。
+- **可视化工具**：使用可视化工具（如TensorBoard）监控训练过程中的关键指标，帮助快速识别问题。
+
+### 示例代码
+以下是一个基本的使用示例：
+```python
+# 示例代码
+import os
+from src.self_supervised.trainer.sbs_trainer import SBSTrainer
+
+config = {'optimizer': {'type': 'adam', 'learning_rate': 0.001}, 'epochs': 10, 'log_dir': 'logs'}
+trainer = SBSTrainer(config=config, mode='standard')
+trainer.train()
+```
+
+### 监控和可视化
+在训练过程中，您可以使用 TensorBoard 监控训练过程中的指标。确保在训练时记录必要的指标，以便在 TensorBoard 中查看。
+
+## 常见问题解答（FAQ）
+
+### 常见问题
+- **如何设置训练参数？**
+  您可以通过配置文件设置训练参数，具体请参考配置部分。
+- **如何处理训练中的错误？**
+  请查看日志文件，了解错误的详细信息，并根据提示进行调试。
+
+## 许可证
+
+本项目遵循 MIT 许可证。有关详细信息，请参阅 LICENSE 文件。
+
+## 项目结构图
+
+以下是项目的结构图，展示了各个组件之间的关系：
+
+```mermaid
+graph TD;
+    A[训练入口] --> B[训练器];
+    B --> C[奖励机制];
+    B --> D[数据加载];
+    B --> E[日志记录];
+    B --> F[可视化];
+    B --> G[配置管理];
+```
+
+## 树状图
+
+以下是项目的树状图，展示了文件和目录的层次结构：
+
+```
+SBS System
+├── app
+├── config
+├── data
+├── logs
+├── models
+├── prompts
+├── scripts
+├── src
+│   ├── self_supervised
+│   │   ├── trainer
+│   │   ├── utils
+│   │   └── visualization
+│   └── tests
+└── docs
+```
+
+## 架构图
+
+以下是项目的架构图，展示了系统的整体结构和数据流：
+
+```mermaid
+flowchart TD;
+    A[用户输入] --> B[训练入口];
+    B --> C[配置管理];
+    C --> D[数据加载];
+    D --> E[训练器];
+    E --> F[模型训练];
+    F --> G[奖励机制];
+    G --> H[日志记录];
+    H --> I[可视化];
+    I --> J[用户输出];
+```
+
+该架构图展示了用户如何通过训练入口输入参数，配置管理如何加载配置，数据加载如何准备数据，训练器如何进行模型训练，以及奖励机制如何计算奖励，最终通过日志记录和可视化反馈给用户。
+
+## 训练流程
+
+在模型生成输出并保存为JSON文件后，系统会进入训练阶段。这一阶段通常包括自监督学习、强化学习和主动学习等多个环节。
+
+### 1. 奖励机制的应用
+- **奖励计算**：模型在执行交易时会根据市场表现和预设的奖励机制计算奖励。例如，成功的交易会获得正奖励，而失败的交易则会受到惩罚。
+- **更新模型**：根据计算得到的奖励，模型会调整其策略，以提高未来的决策质量。这通常通过反向传播和优化算法（如PPO）来实现。
+
+### 2. 多种机制的结合
+除了奖励机制，模型训练还会结合其他机制，例如：
+- **经验回放**：在强化学习中，模型会存储过去的经验（状态、动作、奖励等），并在后续训练中随机抽取这些经验进行学习，以提高样本效率。
+- **主动学习**：在主动学习阶段，模型会选择不确定性较高的样本进行人工标注，以提高模型的学习效率和准确性。
+- **自监督学习**：在自监督学习阶段，模型会利用未标注的数据进行预训练，以提取特征和模式。
+
+### 3. 训练过程的监控和调整
+在整个训练过程中，系统会监控模型的表现，并根据评估结果调整训练策略。例如：
+- **调整学习率**：如果模型的表现不佳，可能会降低学习率以稳定训练过程。
+- **策略调整**：根据回测结果和市场反馈，模型的策略可能会进行动态调整，以适应市场变化。
